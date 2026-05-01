@@ -1,7 +1,9 @@
- name: Build APK
+name: Build APK
+
 on:
   push:
     branches: [ main ]
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -16,19 +18,29 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential git python3 python3-dev \
-            libffi-dev libssl-dev zlib1g-dev liblzma-dev libsqlite3-dev \
-            openjdk-17-jdk autoconf libtool pkg-config \
-            libltdl-dev libgdbm-dev libbz2-dev
-          pip install buildozer cython
+          sudo apt-get install -y \
+            python3-pip build-essential git python3 python3-dev \
+            libffi-dev libssl-dev zlib1g-dev liblzma-dev \
+            libsqlite3-dev openjdk-17-jdk autoconf libtool \
+            pkg-config libltdl-dev libgdbm-dev libbz2-dev \
+            zip unzip
+          pip install buildozer cython virtualenv
+
+      - name: Cache Buildozer
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.buildozer
+            .buildozer
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
 
       - name: Build APK
         run: |
-          buildozer android debug
+          buildozer -v android debug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TikTokDL-Pro
           path: bin/*.apk
-        
+         
